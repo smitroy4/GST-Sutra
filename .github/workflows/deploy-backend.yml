@@ -13,18 +13,23 @@ on:
 
 jobs:
   deploy:
+    name: Build and Deploy Backend
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
+      # 1. Checkout repository
+      - name: Checkout code
         uses: actions/checkout@v4
 
+      # 2. Build Docker image
       - name: Build Docker image
         run: |
           docker build -t gst-sutra-backend:latest ./backend
           docker save gst-sutra-backend:latest -o gst-sutra.tar
+          chmod 644 gst-sutra.tar
 
-      - name: Copy image to Oracle VM
+      # 3. Transfer image to Oracle VM
+      - name: Copy Docker image to Oracle VM
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.VM_HOST }}
@@ -33,18 +38,24 @@ jobs:
           source: "gst-sutra.tar"
           target: "/tmp/"
 
-      - name: Deploy on Oracle VM
+      # 4. Deploy backend on Oracle VM
+      - name: Deploy backend
         uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.VM_HOST }}
           username: ${{ secrets.VM_USER }}
           key: ${{ secrets.VM_SSH_KEY }}
           script: |
+            set -e
+
+            # Load new Docker image
             sudo docker load -i /tmp/gst-sutra.tar
 
+            # Stop and remove old container
             sudo docker stop gst-sutra-backend || true
             sudo docker rm gst-sutra-backend || true
 
+            # Start new container
             sudo docker run -d \
               --name gst-sutra-backend \
               --restart unless-stopped \
@@ -53,4 +64,8 @@ jobs:
               --memory=700m \
               gst-sutra-backend:latest
 
+            # Remove transferred image archive
             rm -f /tmp/gst-sutra.tar
+
+            # Verify container status
+            sudo docker ps --filter name=gst-sutra-backend
