@@ -36,11 +36,15 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, String>> handleGeneralException(
             Exception exception) {
 
+        exception.printStackTrace();
+
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of(
                         "error", "Internal Server Error",
-                        "message", "Something went wrong. Please try again later."
+                        "message", exception.getMessage() == null
+                                ? "Unknown error"
+                                : exception.getMessage()
                 ));
     }
 }

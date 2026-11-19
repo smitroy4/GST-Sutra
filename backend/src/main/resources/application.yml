@@ -1,24 +1,42 @@
+
 server:
   port: 8080
 
 spring:
   application:
     name: gst-sutra
+
   ai:
+    retry:
+      max-attempts: 5
+      backoff:
+        initial-interval: 2s
+        multiplier: 2
+        max-interval: 15s
+
     openai:
       api-key: ${NVIDIA_API_KEY}
-      base-url: https://integrate.api.nvidia.com
+      base-url: https://integrate.api.nvidia.com/v1
+
       chat:
         options:
           model: minimaxai/minimax-m3.1-flash
           temperature: 0.1
+
       embedding:
+        base-url: https://integrate.api.nvidia.com/v1
+        api-key: ${NVIDIA_API_KEY}
         options:
-          model: nvidia/nv-embedqa-e5-v5
+          model: nvidia/nemotron-3.5-embed-1b
+          dimensions: 2048
+          extra-body:
+            input_type: passage
+            truncate: END
+
     vectorstore:
       pinecone:
         api-key: ${PINECONE_API_KEY}
-        index-name: gst-sutra
+        index-name: gst-sutra-vectors
         namespace: gst-docs
 
 gst:
