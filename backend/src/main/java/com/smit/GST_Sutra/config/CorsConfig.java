@@ -1,3 +1,4 @@
+
 package com.smit.GST_Sutra.config;
 
 import org.springframework.context.annotation.Configuration;
@@ -10,7 +11,10 @@ public class CorsConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/api/**")
-                .allowedOrigins("http://localhost:5173")
+                .allowedOrigins(
+                        "http://localhost:5173",
+                        "https://gst-sutra.smitroy.com"
+                )
                 .allowedMethods("GET", "POST")
                 .allowedHeaders("*");
     }
