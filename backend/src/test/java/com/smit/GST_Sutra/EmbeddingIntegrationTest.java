@@ -14,7 +14,7 @@ class EmbeddingIntegrationTest {
     @Test
     void shouldGenerateEmbedding() {
 
-        retrievalService.testEmbedding(
+        retrievalService.retrieveDocuments(
                 "What is GST registration?"
         );
     }
