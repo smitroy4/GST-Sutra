@@ -1,0 +1,56 @@
+
+name: Deploy GST Sutra Backend
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'backend/**'
+      - '.github/workflows/deploy-backend.yml'
+
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: |
+          docker build -t gst-sutra-backend:latest ./backend
+          docker save gst-sutra-backend:latest -o gst-sutra.tar
+
+      - name: Copy image to Oracle VM
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.VM_HOST }}
+          username: ${{ secrets.VM_USER }}
+          key: ${{ secrets.VM_SSH_KEY }}
+          source: "gst-sutra.tar"
+          target: "/tmp/"
+
+      - name: Deploy on Oracle VM
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.VM_HOST }}
+          username: ${{ secrets.VM_USER }}
+          key: ${{ secrets.VM_SSH_KEY }}
+          script: |
+            sudo docker load -i /tmp/gst-sutra.tar
+
+            sudo docker stop gst-sutra-backend || true
+            sudo docker rm gst-sutra-backend || true
+
+            sudo docker run -d \
+              --name gst-sutra-backend \
+              --restart unless-stopped \
+              --env-file /opt/gst-sutra/backend.env \
+              -p 127.0.0.1:8080:8080 \
+              --memory=700m \
+              gst-sutra-backend:latest
+
+            rm -f /tmp/gst-sutra.tar
