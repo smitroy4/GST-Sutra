@@ -27,7 +27,7 @@ spring:
         base-url: https://integrate.api.nvidia.com/v1
         api-key: ${NVIDIA_API_KEY}
         options:
-          model: nvidia/nemotron-3.5-embed-1b
+          model: nvidia/nemotron-3-embed-1b
           dimensions: 2048
           extra-body:
             input_type: passage
