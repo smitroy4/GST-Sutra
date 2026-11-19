@@ -1,0 +1,28 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: gst-sutra
+  ai:
+    openai:
+      api-key: ${NVIDIA_API_KEY}
+      base-url: https://integrate.api.nvidia.com
+      chat:
+        options:
+          model: minimaxai/minimax-m3.1-flash
+          temperature: 0.1
+      embedding:
+        options:
+          model: nvidia/nv-embedqa-e5-v5
+    vectorstore:
+      pinecone:
+        api-key: ${PINECONE_API_KEY}
+        index-name: gst-sutra
+        namespace: gst-docs
+
+gst:
+  docs:
+    location: classpath:docs/*.md
+  chunk:
+    size: 800
